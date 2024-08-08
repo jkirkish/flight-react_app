@@ -3,36 +3,52 @@ import user_icon from '../assets/person.png';
 import email_icon from '../assets/email.png';
 import password_icon from '../assets/password.png';
 import { useState } from "react";
-import axios from 'axios'; // Import Axios
+import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/users'; // Adjust this URL based on your API
+const API_URL = 'http://localhost:8080/api/users'; 
 
 const Login = () => {
   const [action, setAction] = useState("Sign Up");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleRegister = async () => {
+    setLoading(true);
     try {
       const user = { name, email, password };
-      const response = await axios.post(API_URL, user);
+      const response = await axios.post(API_URL, user, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       console.log("User registered:", response.data);
-      // Handle success, e.g., show a success message or redirect to login page
+      setMessage("Registration successful!");
     } catch (error) {
       console.error("Error registering user:", error);
-      // Handle error, e.g., show an error message
+      setMessage("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleLogin = async () => {
+    setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/login`, { email, password });
+      const response = await axios.post(`${API_URL}/login`, { email, password }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       console.log("User logged in:", response.data);
-      // Handle success, e.g., show a success message or redirect to dashboard
+      setMessage("Login successful!");
     } catch (error) {
       console.error("Error logging in user:", error);
-      // Handle error, e.g., show an error message
+      setMessage("Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -86,18 +102,19 @@ const Login = () => {
       )}
       <div className="submit-container">
         <div 
-          className={action === "Login" ? "submit gray" : "submit"} 
-          onClick={handleSubmit}
+          className={`submit ${loading ? 'gray' : ''}`} 
+          onClick={loading ? () => {} : handleSubmit}
         >
-          {action}
+          {loading ? "Loading..." : action}
         </div>
         <div 
-          className={action === "Sign Up" ? "submit gray" : "submit"} 
+          className={`submit ${action === "Sign Up" ? 'gray' : ''}`} 
           onClick={() => setAction(action === "Login" ? "Sign Up" : "Login")}
         >
           {action === "Login" ? "Sign Up" : "Login"}
         </div>
       </div>
+      {message && <div className="message">{message}</div>}
     </div>
   );
 };
